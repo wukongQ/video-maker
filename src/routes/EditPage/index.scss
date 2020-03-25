@@ -1,0 +1,21 @@
+.container{
+  position: relative;
+  width: 1180px;
+  margin: 0 auto;
+  padding: 100px 0;
+  .top{
+    display: flex;
+    & > div {
+      flex-grow: 1;
+    }
+    .renderArea{
+      flex-shrink: 0;
+      flex-grow: 0;
+      margin-left: 40px;
+      width: 500px;
+    }
+  }
+  .bottom{
+    margin-top: 20px;
+  }
+}

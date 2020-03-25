@@ -1,0 +1,30 @@
+timeline:
+  videos:
+    - type: video
+      id: 
+      data:
+        url:
+        start:
+        duration: # unit: ms
+        volume: 0
+  audios:
+    - type: audio
+      id:
+      data:
+        url:
+        start:
+        duration:
+  texts:
+    - type: text
+      id:
+      data:
+        value:
+        start:
+        duration:
+  transitions:
+    - type: transition
+      id:
+      data:
+        name: 
+        inId:
+        outId:
