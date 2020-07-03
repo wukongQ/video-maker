@@ -1,55 +1,64 @@
 import React, { useState, useEffect } from 'react'
 import styles from './index.scss'
 
+export const BtnTypes = {
+  goStart: 'goStart',
+  back: 'back',
+  play: 'play',
+  pause: 'pause',
+  forward: 'forward',
+  goEnd: 'goEnd'
+}
+
 const btnList = [
   {
-    type: 'goStart',
+    type: BtnTypes.goStart,
     name: '起始'
   },
   {
-    type: 'back',
+    type: BtnTypes.back,
     name: '快退'
   },
   {
-    type: 'play',
+    type: BtnTypes.play,
     name: '播放'
   },
   {
-    type: 'pause',
+    type: BtnTypes.pause,
     name: '暂停'
   },
   {
-    type: 'forward',
+    type: BtnTypes.forward,
     name: '快进'
   },
   {
-    type: 'goEnd',
+    type: BtnTypes.goEnd,
     name: '结束'
   }
 ]
 
 const jumpTime = 4000
 
-function RenderOperationBar ({ playStatus, nowTime, maxTime, onChange }) {
+function RenderOperationBar ({ isPlayed, nowTime, maxTime, onChange }) {
   const handleBtnClick = (btn, e) => {
     let type = ''
     let value = ''
-    if (['play', 'pause'].includes(btn.type)) {
+    if ([BtnTypes.play, BtnTypes.pause].includes(btn.type)) {
       type = 'status'
-      value = !playStatus
+      value = !isPlayed
     } else {
       type = 'time'
       switch (btn.type) {
-        case 'goStart':
+        case BtnTypes.goStart:
           value = 0
           break
-        case 'goEnd':
+        case BtnTypes.goEnd:
           value = maxTime
           break
-        case 'back':
+        case BtnTypes.back:
           value = nowTime - jumpTime < 0 ? 0 : nowTime - jumpTime
           break
-        case 'forward':
+        case BtnTypes.forward:
           value = nowTime + jumpTime > maxTime ? maxTime : nowTime + jumpTime
           break
       }
@@ -64,7 +73,7 @@ function RenderOperationBar ({ playStatus, nowTime, maxTime, onChange }) {
     <div className={styles.container}>
       {
         btnList.map(btn => {
-          if ((playStatus && btn.type === 'play') || (!playStatus && btn.type === 'pause')) {
+          if ((isPlayed && btn.type === BtnTypes.play) || (!isPlayed && btn.type === BtnTypes.pause)) {
             return ''
           }
           return (
@@ -78,4 +87,4 @@ function RenderOperationBar ({ playStatus, nowTime, maxTime, onChange }) {
   )
 }
 
-export default RenderOperationBar
+export default React.memo(RenderOperationBar)

@@ -1,44 +1,51 @@
-import React, { useState, useEffect, useRef, useLayoutEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import classnames from 'classnames'
 import { RenderOperationBar } from '@components'
 import { getVideoMaxTime } from '@utils/func.js'
+// import CanvasRender from '@utils/render-old.js'
 import CanvasRender from '@utils/render.js'
 import styles from './index.scss'
 
-let canvasRender = null
-
 function VideoRenderArea ({ data, nowTime, onNowTimeChange, className }) {
-  const canvasRef = useRef(null)
   const [maxTime, setMaxTime] = useState(0)
+  const [isPlayed, setIsPlayed] = useState(false)
+  const canvasRef = useRef(null)
+  let canvasRender = useRef(null)
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     let canvas = canvasRef.current
     let s = window.getComputedStyle(canvas)
     setMaxTime(getVideoMaxTime(data))
-    canvasRender = new CanvasRender(canvas, data, {
+    canvasRender.current = new CanvasRender(canvas, data, {
       width: parseInt(s.width),
       height: parseInt(s.height)
     })
-    console.log('data effect')
   }, [data])
 
-  // useEffect(() => {
-  // }, [nowTime])
-
-  const [playStatus, setPlayStatus] = useState(false)
   useEffect(() => {
-    if (playStatus) {
-      canvasRender.start(nowTime, time => {
-        onNowTimeChange(time)
-        if (time >= maxTime - 20) {
-          console.log(time)
-          setPlayStatus(false)
-        }
-      })
+    if (isPlayed) {
+      canvasRender.current.start(nowTime, timeChangeCb)
     } else {
-      canvasRender.pause()
+      canvasRender.current.stop()
     }
-  }, [playStatus])
+  }, [isPlayed])
+
+  const onBarTimeChange = (time) => {
+    onNowTimeChange(time)
+    console.log(time)
+    if (isPlayed) {
+      canvasRender.current.skip(time, timeChangeCb)
+    } else {
+      canvasRender.current.renderFrame(time, true)
+    }
+  }
+
+  const timeChangeCb = time => {
+    onNowTimeChange(time)
+    if (time >= maxTime-20) {
+      setIsPlayed(false)
+    }
+  }
 
   return (
     <div className={classnames(className, styles.container)}>
@@ -46,18 +53,17 @@ function VideoRenderArea ({ data, nowTime, onNowTimeChange, className }) {
         <canvas ref={canvasRef} />
       </div>
       <RenderOperationBar
-        playStatus={playStatus}
+        isPlayed={isPlayed}
         nowTime={nowTime}
         maxTime={maxTime}
         onChange={({ type, value }) => {
           console.log(type, value)
           switch (type) {
             case 'status':
-              setPlayStatus(value)
+              setIsPlayed(value)
               break
             case 'time':
-              onNowTimeChange(value)
-              canvasRender.renderFrame(value)
+              onBarTimeChange(value)
               break
           }
         }} />
@@ -65,4 +71,4 @@ function VideoRenderArea ({ data, nowTime, onNowTimeChange, className }) {
   )
 }
 
-export default VideoRenderArea
+export default React.memo(VideoRenderArea)

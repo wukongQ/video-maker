@@ -51,13 +51,6 @@ module.exports = {
                 localIdentName: '[folder]-[local]-[hash:4]'
               }
             }
-          }, {
-            loader: 'postcss-loader',
-            options: {
-              config: {
-                path: './postcss.config.js'
-              }
-            }
           },
           { loader: 'sass-loader' },
           {
@@ -75,13 +68,6 @@ module.exports = {
         }, {
           loader: 'css-loader'
         }, {
-          loader: 'postcss-loader',
-          options: {
-            config: {
-              path: './postcss.config.js'
-            }
-          }
-        }, {
           loader: 'less-loader',
           options: {
             javascriptEnabled: true,
@@ -97,13 +83,6 @@ module.exports = {
           loader: 'style-loader'
         }, {
           loader: 'css-loader'
-        }, {
-          loader: 'postcss-loader',
-          options: {
-            config: {
-              path: './postcss.config.js'
-            }
-          }
         }]
       }
     ]
@@ -111,7 +90,7 @@ module.exports = {
   plugins: [
     new CleanWebpackPlugin(),
     new HtmlWebpackPlugin({
-      title: 'Modi',
+      title: 'demo',
       template: './index.ejs',
       favicon: './favicon.ico'
     })

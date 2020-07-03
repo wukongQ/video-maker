@@ -10,4 +10,4 @@ function TimeLine ({ nowTime, className }) {
   )
 }
 
-export default TimeLine
+export default React.memo(TimeLine)

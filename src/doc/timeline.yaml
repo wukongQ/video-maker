@@ -7,6 +7,8 @@ timeline:
         start:
         duration: # unit: ms
         volume: 0
+        rangeStart:
+        rangeEnd:
   audios:
     - type: audio
       id:
@@ -14,6 +16,8 @@ timeline:
         url:
         start:
         duration:
+        rangeStart:
+        rangeEnd:
   texts:
     - type: text
       id:

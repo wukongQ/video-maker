@@ -8,4 +8,4 @@ function ResourceDashboard ({ className }) {
   )
 }
 
-export default ResourceDashboard
+export default React.memo(ResourceDashboard)

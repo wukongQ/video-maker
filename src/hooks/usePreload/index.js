@@ -4,16 +4,16 @@ function usePreload (data) {
   const [preloading, setPreloading] = useState(true)
 
   useEffect(() => {
-    let { videos } = data
-    let preloadArr = []
+    const { videos } = data
+    const preloadArr = []
     videos.forEach(video => {
-      let { data: { url } = {} } = video
+      const { data: { url, rangeStart } = {} } = video
       if (url) {
-        preloadArr.push(preloadVideo(url))
+        preloadArr.push(preloadVideo(url, rangeStart))
       }
     })
     Promise.all(preloadArr).then(resList => {
-      console.log('finish preload')
+      console.log('finish preload', resList)
       setPreloading(false)
     })
   }, [])
@@ -23,15 +23,17 @@ function usePreload (data) {
   }
 }
 
-function preloadVideo (url) {
-  // return window.fetch(url)
+function preloadVideo (url, rangeStart) {
   return new Promise((resolve, reject) => {
-    let videoEle = document.createElement('video')
-    videoEle.addEventListener('canplay', () => {
-      resolve()
+    const videoEle = document.createElement('video')
+    videoEle.addEventListener('canplaythrough', () => {
+      videoEle.currentTime = rangeStart
+      resolve({
+        duration: videoEle.duration * 1000
+      })
     })
     videoEle.addEventListener('error', () => {
-      resolve()
+      resolve({ duration: -1 })
     })
     Object.assign(videoEle, {
       crossOrigin: 'anonymous',
