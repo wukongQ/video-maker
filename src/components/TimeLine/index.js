@@ -5,7 +5,7 @@ import styles from './index.scss'
 function TimeLine ({ nowTime, className }) {
   return (
     <div className={classnames(className)}>
-      {nowTime}
+      <div className={styles.showTime}>{nowTime}</div>
     </div>
   )
 }

@@ -27,7 +27,6 @@ function preloadVideo (url, rangeStart) {
   return new Promise((resolve, reject) => {
     const videoEle = document.createElement('video')
     videoEle.addEventListener('canplaythrough', () => {
-      videoEle.currentTime = rangeStart
       resolve({
         duration: videoEle.duration * 1000
       })

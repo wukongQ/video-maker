@@ -1,6 +1,16 @@
 import { getVideoMaxTime } from '@utils/func.js'
 import { render } from 'less'
 
+HTMLVideoElement.prototype.egPaused = true
+HTMLVideoElement.prototype.egPause = function () {
+  this.egPaused = true
+  this.pause()
+}
+HTMLVideoElement.prototype.egPlay = function () {
+  this.egPaused = false
+  return this.play()
+}
+
 export default class CanvasRender {
   trackItemLinked = {}
   renderAnimaId = 0
@@ -15,7 +25,6 @@ export default class CanvasRender {
     this.canvasEle.width = this.size.width
     this.canvasEle.height = this.size.height
     
-    this.ctx.fillRect(0, 0, this.canvasEle.width, this.canvasEle.height)
     this.createVideoDom()
     this.renderFrame(0, true)
   }
@@ -31,7 +40,10 @@ export default class CanvasRender {
         volume: 0,
         src: url
       })
-      !this.trackItemLinked[video.id] && (this.trackItemLinked[video.id] = {})
+      !this.trackItemLinked[video.id] && (this.trackItemLinked[video.id] = {
+        playPromise: null,    // play()调用后返回的promise，用于判断是否在play()调用过程中
+        preCurrentTime: false // currentTime提前跳转标识，优化切换不同视频渲染时的卡顿
+      })
       this.trackItemLinked[video.id].videoEle = tempEle
     })
   }
@@ -53,10 +65,9 @@ export default class CanvasRender {
     startRender()
   }
 
-  skip (time, timeChangeCb) {
+  skip (time) {
     this.stop()
     this.renderFrame(time, true)
-    this.start(time, timeChangeCb)
   }
 
   async stop () {
@@ -67,15 +78,21 @@ export default class CanvasRender {
       videos.forEach(async video => {
         let trackItem = this.trackItemLinked[video.id]
         let ele = trackItem.videoEle
-        // trackItem.playPromise && await trackItem.playPromise
-        !ele.paused && ele.pause()
+        trackItem.playPromise && await trackItem.playPromise
+        !ele.egPaused && ele.egPause()
         trackItem.playPromise = null
       })
     }
     videoPause()
   }
 
+  /**
+   * 渲染单帧画面
+   * @param {number} time 当前渲染时间
+   * @param {boolean} isSingle 是否为仅渲染单帧，仅渲染单帧模式下，视频处理不一样
+   */
   renderFrame (time, isSingle) {
+    this.ctx.fillRect(0, 0, this.size.width, this.size.height)
     this.videoFrameRender(time, isSingle)
   }
 
@@ -85,24 +102,25 @@ export default class CanvasRender {
       const { id, data: { start, rangeStart, rangeEnd } = {} } = video
       let trackItem = this.trackItemLinked[id]
       let videoEle = trackItem.videoEle
-      if (start <= time && start + rangeEnd - rangeStart >= time) {
+      if (this._isVideoInRender(video, time)) {
         let renderTime = rangeStart + time - start
         if (isSingle) {
-          !videoEle.paused && videoEle.pause()
+          !videoEle.egPaused && videoEle.egPause()
           await CanvasRender.changeVideoCurrentTime(videoEle, renderTime/1000)
-          this.drawVideo(videoEle)
-        } else {
-          if (videoEle.paused) {
-            await CanvasRender.changeVideoCurrentTime(videoEle, renderTime/1000)
-            // await videoEle.play()
-            trackItem.playPromise = videoEle.play()
-            await trackItem.playPromise
-            trackItem.playPromise = null
-          }
-          this.drawVideo(videoEle)
+        } else if(videoEle.egPaused) {
+          videoEle.egPaused = false // 防止调用多次currentTime，导致视频卡住
+          !trackItem.preCurrentTime && await CanvasRender.changeVideoCurrentTime(videoEle, renderTime/1000)
+          trackItem.playPromise = videoEle.play()
+          await trackItem.playPromise
+          trackItem.playPromise = null
+          trackItem.preCurrentTime = false
         }
+        this.drawVideo(videoEle)
+      } else if (this._isVideoInPreSetCurrent(video, time)) {
+        CanvasRender.changeVideoCurrentTime(videoEle, rangeStart/1000)
+        trackItem.preCurrentTime = true
       } else {
-        !videoEle.paused && videoEle.pause()
+        !videoEle.egPaused && videoEle.egPause()
       }
     }
   }
@@ -143,5 +161,27 @@ export default class CanvasRender {
       videoEle.addEventListener('timeupdate', handleUpdate)
       videoEle.currentTime = time
     })
+  }
+  
+  /**
+   * 判断是否为当前播放视频
+   * @param {object} video video数据
+   * @param {number} time 当前渲染时间
+   */
+  _isVideoInRender (video, time) {
+    const { data: { start, rangeStart, rangeEnd } = {} } = video
+    return start <= time && start + rangeEnd - rangeStart >= time
+  }
+
+  /**
+   * 判断是否为将要播放的视频
+   * @param {object} video video数据
+   * @param {number} time 当前渲染时间
+   */
+  _isVideoInPreSetCurrent (video, time) {
+    const preTime = 2000
+    const { id, data: { start } = {} } = video
+    let trackItem = this.trackItemLinked[id]
+    return !trackItem.preCurrentTime && start <= time + preTime && start > time
   }
 }

@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef } from 'react'
 import classnames from 'classnames'
 import { RenderOperationBar } from '@components'
 import { getVideoMaxTime } from '@utils/func.js'
-// import CanvasRender from '@utils/render-old.js'
 import CanvasRender from '@utils/render.js'
+// import CanvasRender from '@utils/renderGl.js'
 import styles from './index.scss'
 
 function VideoRenderArea ({ data, nowTime, onNowTimeChange, className }) {
@@ -31,13 +31,10 @@ function VideoRenderArea ({ data, nowTime, onNowTimeChange, className }) {
   }, [isPlayed])
 
   const onBarTimeChange = (time) => {
+    console.log(`time change: ${time}`)
     onNowTimeChange(time)
-    console.log(time)
-    if (isPlayed) {
-      canvasRender.current.skip(time, timeChangeCb)
-    } else {
-      canvasRender.current.renderFrame(time, true)
-    }
+    setIsPlayed(false)
+    canvasRender.current.skip(time)
   }
 
   const timeChangeCb = time => {
