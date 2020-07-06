@@ -22,8 +22,19 @@ function EditPage () {
         type: 'video',
         id: uuidv4(),
         data: {
-          url: 'https://cdn.aidigger.com/modiAudio/0c303712-8d9d-437b-be38-8e341b30cd61.mp4',
+          url: 'https://cdn.aidigger.com/Modi/ModiKuro/algorithm/video/washtube/video/84797c0e-a40a-11ea-9ef6-87968572cc5a_8b36cace-a40a-11ea-a6b4-e180e1c0d9cd.mp4',
           start: 5000,
+          duration: 1,
+          rangeStart: 9000,
+          rangeEnd: 10000
+        }
+      },
+      {
+        type: 'video',
+        id: uuidv4(),
+        data: {
+          url: 'https://cdn.aidigger.com/modiAudio/0c303712-8d9d-437b-be38-8e341b30cd61.mp4',
+          start: 7000,
           duration: 20032,
           rangeStart: 10000,
           rangeEnd: 16000

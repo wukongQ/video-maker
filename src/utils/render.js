@@ -42,10 +42,14 @@ export default class CanvasRender {
       })
       !this.trackItemLinked[video.id] && (this.trackItemLinked[video.id] = {
         playPromise: null,    // play()调用后返回的promise，用于判断是否在play()调用过程中
-        preCurrentTime: false // currentTime提前跳转标识，优化切换不同视频渲染时的卡顿
+        isPreSetCurrentTime: false // currentTime提前赋值标识，优化切换不同视频渲染时的卡顿
       })
       this.trackItemLinked[video.id].videoEle = tempEle
     })
+  }
+
+  fillCanvasBg () {
+    this.ctx.fillRect(0, 0, this.size.width, this.size.height)
   }
 
   start (time, timeChangeCb) {
@@ -92,36 +96,40 @@ export default class CanvasRender {
    * @param {boolean} isSingle 是否为仅渲染单帧，仅渲染单帧模式下，视频处理不一样
    */
   renderFrame (time, isSingle) {
-    this.ctx.fillRect(0, 0, this.size.width, this.size.height)
     this.videoFrameRender(time, isSingle)
   }
 
   async videoFrameRender (time, isSingle) {
     const { videos=[] } = this.data
+    let nowRender = 0
     for (let video of videos) {
       const { id, data: { start, rangeStart, rangeEnd } = {} } = video
       let trackItem = this.trackItemLinked[id]
       let videoEle = trackItem.videoEle
       if (this._isVideoInRender(video, time)) {
+        nowRender++
         let renderTime = rangeStart + time - start
         if (isSingle) {
           !videoEle.egPaused && videoEle.egPause()
           await CanvasRender.changeVideoCurrentTime(videoEle, renderTime/1000)
         } else if(videoEle.egPaused) {
           videoEle.egPaused = false // 防止调用多次currentTime，导致视频卡住
-          !trackItem.preCurrentTime && await CanvasRender.changeVideoCurrentTime(videoEle, renderTime/1000)
+          !trackItem.isPreSetCurrentTime && await CanvasRender.changeVideoCurrentTime(videoEle, renderTime/1000)
           trackItem.playPromise = videoEle.play()
           await trackItem.playPromise
           trackItem.playPromise = null
-          trackItem.preCurrentTime = false
+          trackItem.isPreSetCurrentTime = false
         }
         this.drawVideo(videoEle)
       } else if (this._isVideoInPreSetCurrent(video, time)) {
         CanvasRender.changeVideoCurrentTime(videoEle, rangeStart/1000)
-        trackItem.preCurrentTime = true
+        trackItem.isPreSetCurrentTime = true
       } else {
         !videoEle.egPaused && videoEle.egPause()
       }
+    }
+    if (nowRender === 0) {
+      this.fillCanvasBg()
     }
   }
 
@@ -148,17 +156,24 @@ export default class CanvasRender {
       dy = 0
       dx = Math.floor((cw - dWidth) / 2)
     }
+    this.fillCanvasBg()
     this.ctx.drawImage(videoEle, dx, dy, dWidth, dHeight)
   }
 
   static changeVideoCurrentTime (videoEle, time) {
-    // [!problem]timeupdate触发时也并不能保证当前video已经是currentTime的画面
     return new Promise((resolve, reject) => {
-      const handleUpdate = () => {
-        videoEle.removeEventListener('timeupdate', handleUpdate)
+      // [!problem]timeupdate触发时并不能保证当前video已经是currentTime的画面
+      // const handleUpdate = () => {
+      //   console.log('timeupdate', videoEle.currentTime)
+      //   videoEle.removeEventListener('timeupdate', handleUpdate)
+      //   resolve()
+      // }
+      // videoEle.addEventListener('timeupdate', handleUpdate)
+      const handleSeeked = () => {
+        videoEle.removeEventListener('seeked', handleSeeked)
         resolve()
       }
-      videoEle.addEventListener('timeupdate', handleUpdate)
+      videoEle.addEventListener('seeked', handleSeeked)
       videoEle.currentTime = time
     })
   }
@@ -182,6 +197,6 @@ export default class CanvasRender {
     const preTime = 2000
     const { id, data: { start } = {} } = video
     let trackItem = this.trackItemLinked[id]
-    return !trackItem.preCurrentTime && start <= time + preTime && start > time
+    return !trackItem.isPreSetCurrentTime && start <= time + preTime && start > time
   }
 }
