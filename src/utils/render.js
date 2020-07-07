@@ -1,13 +1,13 @@
 import { getVideoMaxTime } from '@utils/func.js'
 import { render } from 'less'
 
-HTMLVideoElement.prototype.egPaused = true
-HTMLVideoElement.prototype.egPause = function () {
-  this.egPaused = true
+HTMLVideoElement.prototype.vmPaused = true
+HTMLVideoElement.prototype.vmPause = function () {
+  this.vmPaused = true
   this.pause()
 }
-HTMLVideoElement.prototype.egPlay = function () {
-  this.egPaused = false
+HTMLVideoElement.prototype.vmPlay = function () {
+  this.vmPaused = false
   return this.play()
 }
 
@@ -24,7 +24,7 @@ export default class CanvasRender {
 
     this.canvasEle.width = this.size.width
     this.canvasEle.height = this.size.height
-    
+
     this.createVideoDom()
     this.renderFrame(0, true)
   }
@@ -83,7 +83,7 @@ export default class CanvasRender {
         let trackItem = this.trackItemLinked[video.id]
         let ele = trackItem.videoEle
         trackItem.playPromise && await trackItem.playPromise
-        !ele.egPaused && ele.egPause()
+        !ele.vmPaused && ele.vmPause()
         trackItem.playPromise = null
       })
     }
@@ -110,10 +110,10 @@ export default class CanvasRender {
         nowRender++
         let renderTime = rangeStart + time - start
         if (isSingle) {
-          !videoEle.egPaused && videoEle.egPause()
+          !videoEle.vmPaused && videoEle.vmPause()
           await CanvasRender.changeVideoCurrentTime(videoEle, renderTime/1000)
-        } else if(videoEle.egPaused) {
-          videoEle.egPaused = false // 防止调用多次currentTime，导致视频卡住
+        } else if(videoEle.vmPaused) {
+          videoEle.vmPaused = false // 防止调用多次currentTime，导致视频卡住
           !trackItem.isPreSetCurrentTime && await CanvasRender.changeVideoCurrentTime(videoEle, renderTime/1000)
           trackItem.playPromise = videoEle.play()
           await trackItem.playPromise
@@ -125,7 +125,7 @@ export default class CanvasRender {
         CanvasRender.changeVideoCurrentTime(videoEle, rangeStart/1000)
         trackItem.isPreSetCurrentTime = true
       } else {
-        !videoEle.egPaused && videoEle.egPause()
+        !videoEle.vmPaused && videoEle.vmPause()
       }
     }
     if (nowRender === 0) {
