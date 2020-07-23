@@ -23,10 +23,10 @@ function EditPage () {
         id: uuidv4(),
         data: {
           url: 'https://cdn.aidigger.com/Modi/ModiKuro/algorithm/video/washtube/video/84797c0e-a40a-11ea-9ef6-87968572cc5a_8b36cace-a40a-11ea-a6b4-e180e1c0d9cd.mp4',
-          start: 5000,
-          duration: 1,
+          start: 8000,
+          duration: 1000000,
           rangeStart: 9000,
-          rangeEnd: 10000
+          rangeEnd: 11000
         }
       },
       {

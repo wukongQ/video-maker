@@ -96,18 +96,17 @@ export default class CanvasRender {
    * @param {boolean} isSingle 是否为仅渲染单帧，仅渲染单帧模式下，视频处理不一样
    */
   renderFrame (time, isSingle) {
+    this.fillCanvasBg()
     this.videoFrameRender(time, isSingle)
   }
 
   async videoFrameRender (time, isSingle) {
     const { videos=[] } = this.data
-    let nowRender = 0
     for (let video of videos) {
       const { id, data: { start, rangeStart, rangeEnd } = {} } = video
       let trackItem = this.trackItemLinked[id]
       let videoEle = trackItem.videoEle
       if (this._isVideoInRender(video, time)) {
-        nowRender++
         let renderTime = rangeStart + time - start
         if (isSingle) {
           !videoEle.vmPaused && videoEle.vmPause()
@@ -128,13 +127,6 @@ export default class CanvasRender {
         !videoEle.vmPaused && videoEle.vmPause()
       }
     }
-    if (nowRender === 0) {
-      this.fillCanvasBg()
-    }
-  }
-
-  textFrameRender (time) {
-    console.log(time)
   }
 
   drawVideo (videoEle) {
@@ -156,7 +148,6 @@ export default class CanvasRender {
       dy = 0
       dx = Math.floor((cw - dWidth) / 2)
     }
-    this.fillCanvasBg()
     this.ctx.drawImage(videoEle, dx, dy, dWidth, dHeight)
   }
 
