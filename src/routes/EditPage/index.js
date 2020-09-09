@@ -11,22 +11,22 @@ function EditPage () {
         type: 'video',
         id: uuidv4(),
         data: {
-          url: 'https://cdn.aidigger.com/modiAudio/7f33af87-6528-43dc-9176-3dd94f029adc.mp4',
+          url: 'https://cdn.aidigger.com/Modi/ModiKuro/algorithm/video/washtube/video/84797c0e-a40a-11ea-9ef6-87968572cc5a_8b36cace-a40a-11ea-a6b4-e180e1c0d9cd.mp4',
           start: 0,
-          duration: 27392,
-          rangeStart: 5000,
-          rangeEnd: 10000
+          duration: 1000000,
+          rangeStart: 2000,
+          rangeEnd: 11000
         }
       },
       {
         type: 'video',
         id: uuidv4(),
         data: {
-          url: 'https://cdn.aidigger.com/Modi/ModiKuro/algorithm/video/washtube/video/84797c0e-a40a-11ea-9ef6-87968572cc5a_8b36cace-a40a-11ea-a6b4-e180e1c0d9cd.mp4',
-          start: 8000,
-          duration: 1000000,
-          rangeStart: 9000,
-          rangeEnd: 11000
+          url: 'https://cdn.aidigger.com/Modi/ModiKuro/page_convertor/video_014c1df4-f6d2-4778-8661-7ab6ca472037.webm',
+          start: 0,
+          duration: 27392,
+          rangeStart: 5000,
+          rangeEnd: 10000
         }
       },
       {
